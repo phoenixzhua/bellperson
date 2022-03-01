@@ -644,7 +644,7 @@ mod test {
                 match bits.get(i) {
                     Some(Boolean::Is(a)) => assert_eq!(b, a.get_value().unwrap()),
                     Some(_) => unreachable!(),
-                    None => assert_eq!(b, false),
+                    None => assert!(!b),
                 };
             }
 

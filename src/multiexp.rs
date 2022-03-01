@@ -584,7 +584,7 @@ mod tests {
         let max_density = max_bits;
 
         // Create an empty DensityTracker.
-        let empty = || DensityTracker::new();
+        let empty = DensityTracker::new;
 
         // Create a random DensityTracker with first bit unset.
         let unset = |rng: &mut XorShiftRng| {
@@ -610,8 +610,8 @@ mod tests {
         };
 
         // Create a random DensityTracker with first bit set.
-        let set = |mut rng: &mut XorShiftRng| {
-            let mut dt = unset(&mut rng);
+        let set = |rng: &mut XorShiftRng| {
+            let mut dt = unset(rng);
             dt.inc(0);
             dt
         };

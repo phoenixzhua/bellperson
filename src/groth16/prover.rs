@@ -498,7 +498,7 @@ where
                     g_c.add_assign(&b1_answer);
                     let mut rs = r;
                     rs.mul_assign(&s);
-                    g_c = vk.delta_g1.mul(rs);
+                    g_c.add_assign(vk.delta_g1.mul(rs));
                     g_c.add_assign(&vk.alpha_g1.mul(s));
                     g_c.add_assign(&vk.beta_g1.mul(r));
                 }

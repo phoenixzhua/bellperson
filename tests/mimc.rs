@@ -241,11 +241,12 @@ fn test_mimc() {
                 xr: Some(xr),
                 constants: &constants,
             }
-        }).take(SAMPLES as usize).collect();
+        })
+        .take(SAMPLES as usize)
+        .collect();
 
         // Create a groth16 proof with our parameters.
-        let proofs =
-            create_random_proof_batch(circuits, &params, &mut *rng).unwrap();
+        let proofs = create_random_proof_batch(circuits, &params, &mut *rng).unwrap();
         assert_eq!(proofs.len(), 50);
     }
 

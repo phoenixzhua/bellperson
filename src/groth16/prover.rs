@@ -484,7 +484,7 @@ where
                 a_answer.add_assign(&a_aux.wait()?);
                 g_a.add_assign(&a_answer);
                 a_answer.mul_assign(s);
-                let mut g_c = a_answer.clone();
+                let mut g_c = a_answer;
 
                 let mut b2_answer = b_g2_inputs.wait()?;
                 b2_answer.add_assign(&b_g2_aux.wait()?);

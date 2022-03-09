@@ -237,11 +237,21 @@ where
 
     create_proof_batch_priority::<E, C, P>(circuits, params, r_s, s_s, priority)
 }
+/// creates a batch of proofs where the randomization vector is set to zero.
+/// This allows for optimization of proving.
+pub fn create_proof_batch_priority_nonzk<E, C, P: ParameterSource<E>>(
+    circuits: Vec<C>,
+    params: P,
+    priority: bool,
+) -> Result<Vec<Proof<E>>, SynthesisError>where
+    E: gpu::GpuEngine + MultiMillerLoop,
+    C: Circuit<E::Fr> + Send,
+{
+    create_proof_batch_priority_inner(circuits, params, None, priority)
+}
 
 /// creates a batch of proofs where the randomization vector is already
-/// predefined. This methods allows to get a non randomized version of the
-/// proofs, i.e. WITHOUT zero knowledge property, if `r_s` and `s_s` are all
-/// zeros.
+/// predefined
 #[allow(clippy::clippy::needless_collect)]
 pub fn create_proof_batch_priority<E, C, P: ParameterSource<E>>(
     circuits: Vec<C>,
@@ -254,10 +264,23 @@ where
     E: gpu::GpuEngine + MultiMillerLoop,
     C: Circuit<E::Fr> + Send,
 {
+    create_proof_batch_priority_inner(circuits, params, Some((r_s, s_s)), priority)
+}
+
+fn create_proof_batch_priority_inner<E, C, P: ParameterSource<E>>(
+        circuits: Vec<C>,
+        params: P,
+        randomization: Option<(Vec<E::Fr>, Vec<E::Fr>)>,
+        priority: bool,
+    ) -> Result<Vec<Proof<E>>, SynthesisError>
+        where
+            E: gpu::GpuEngine + MultiMillerLoop,
+            C: Circuit<E::Fr> + Send,
+{
     info!("Bellperson {} is being used!", BELLMAN_VERSION);
 
     let (start, mut provers, input_assignments, aux_assignments) =
-        create_proof_batch_priority_inner(circuits)?;
+        circuit_to_vector_repr(circuits)?;
 
     let worker = Worker::new();
     let input_len = input_assignments[0].len();
@@ -269,12 +292,12 @@ where
     let aux_assignment_len = provers[0].aux_assignment.len();
     let num_circuits = provers.len();
 
-    let r_s_zero = r_s.iter().all(E::Fr::is_zero_vartime);
-    let s_s_zero = s_s.iter().all(E::Fr::is_zero_vartime);
-    if r_s_zero ^ s_s_zero {
-        return Err(SynthesisError::InvalidZeroKnowledge);
-    }
-    let non_zk = r_s_zero;
+    let non_zk = randomization == None;
+    let (r_s, s_s) = match randomization {
+        Some(x) => x,
+        None => (vec![E::Fr::zero(); num_circuits], vec![E::Fr::zero(); num_circuits])
+    };
+
     // Make sure all circuits have the same input len.
     for prover in &provers {
         assert_eq!(
@@ -561,7 +584,7 @@ where
 }
 
 #[allow(clippy::type_complexity)]
-fn create_proof_batch_priority_inner<Scalar, C>(
+fn circuit_to_vector_repr<Scalar, C>(
     circuits: Vec<C>,
 ) -> Result<
     (

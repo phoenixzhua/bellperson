@@ -243,7 +243,8 @@ pub fn create_proof_batch_priority_nonzk<E, C, P: ParameterSource<E>>(
     circuits: Vec<C>,
     params: P,
     priority: bool,
-) -> Result<Vec<Proof<E>>, SynthesisError>where
+) -> Result<Vec<Proof<E>>, SynthesisError>
+where
     E: gpu::GpuEngine + MultiMillerLoop,
     C: Circuit<E::Fr> + Send,
 {
@@ -268,14 +269,14 @@ where
 }
 
 fn create_proof_batch_priority_inner<E, C, P: ParameterSource<E>>(
-        circuits: Vec<C>,
-        params: P,
-        randomization: Option<(Vec<E::Fr>, Vec<E::Fr>)>,
-        priority: bool,
-    ) -> Result<Vec<Proof<E>>, SynthesisError>
-        where
-            E: gpu::GpuEngine + MultiMillerLoop,
-            C: Circuit<E::Fr> + Send,
+    circuits: Vec<C>,
+    params: P,
+    randomization: Option<(Vec<E::Fr>, Vec<E::Fr>)>,
+    priority: bool,
+) -> Result<Vec<Proof<E>>, SynthesisError>
+where
+    E: gpu::GpuEngine + MultiMillerLoop,
+    C: Circuit<E::Fr> + Send,
 {
     info!("Bellperson {} is being used!", BELLMAN_VERSION);
 
@@ -295,7 +296,10 @@ fn create_proof_batch_priority_inner<E, C, P: ParameterSource<E>>(
     let non_zk = randomization == None;
     let (r_s, s_s) = match randomization {
         Some(x) => x,
-        None => (vec![E::Fr::zero(); num_circuits], vec![E::Fr::zero(); num_circuits])
+        None => (
+            vec![E::Fr::zero(); num_circuits],
+            vec![E::Fr::zero(); num_circuits],
+        ),
     };
 
     // Make sure all circuits have the same input len.
